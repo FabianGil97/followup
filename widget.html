@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📞 Follow-Up-Interventionen: EDEKA-Navigator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: #f8f9fa;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .search-bar {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #dc3545;
+        }
+
+        .search-navigation {
+            display: none;
+            margin-top: 15px;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .search-navigation.active {
+            display: flex;
+        }
+
+        .nav-button {
+            padding: 8px 16px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .nav-button:hover:not(:disabled) {
+            background: #c82333;
+            transform: translateY(-1px);
+        }
+
+        .nav-button:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+        }
+
+        .search-info {
+            color: #4a5568;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .current-match {
+            background: #22c55e !important;
+            border-color: #16a34a !important;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.6) !important;
+            color: white !important;
+        }
+
+        .filters {
+            padding: 20px 30px;
+            background: #f1f3f4;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .macro-shortcuts {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .micro-shortcuts {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #dc3545;
+            background: white;
+            color: #dc3545;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .filter-btn.active {
+            background: #dc3545;
+            color: white;
+        }
+
+        .macro-btn {
+            padding: 12px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            border-width: 2px;
+        }
+
+        .micro-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-width: 1px;
+            border-radius: 15px;
+            opacity: 0.9;
+        }
+
+        .micro-btn:hover {
+            opacity: 1;
+        }
+
+        .shortcuts-label {
+            font-size: 13px;
+            color: #666;
+            font-weight: 600;
+            margin-right: 10px;
+            margin-bottom: 5px;
+        }
+
+        .interventions-container {
+            padding: 30px;
+        }
+
+        .intervention-card {
+            margin-bottom: 25px;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .intervention-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .intervention-header {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 20px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .intervention-header h2 {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .intervention-header .scenario {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .intervention-header .meta-comment {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            font-style: italic;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .expand-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            transition: transform 0.3s;
+        }
+
+        .intervention-content {
+            display: none;
+            padding: 25px;
+            background: #fafafa;
+        }
+
+        .intervention-card.expanded .intervention-content {
+            display: block;
+        }
+
+        .intervention-card.expanded .expand-icon {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        .formulierung {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .formulierung h4 {
+            color: #28a745;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .formulierung-text {
+            color: #2d3748;
+            white-space: pre-line;
+        }
+
+        .zusatz-option {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+            margin-top: 15px;
+        }
+
+        .zusatz-option h5 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .quick-access {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #dc3545;
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+            transition: all 0.3s;
+            z-index: 1000;
+            font-size: 1.5rem;
+        }
+
+        .quick-access:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+        }
+
+        .highlight {
+            background: #fff3cd;
+            border-color: #ffeaa7;
+        }
+
+        .stats {
+            background: #f8f9fa;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #dc3545;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        
+        /* ===== Follow-Up Leitfaden (Top-Bereich) ===== */
+        .top-guide{
+            padding: 25px 30px;
+            background: #ffffff;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .guide-intro{
+            background: #f1f5ff;
+            border-left: 5px solid #045ff2;
+            padding: 18px 20px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+        }
+        .guide-intro h2{
+            color: #0f172a;
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+        .guide-intro p{
+            color: #334155;
+            line-height: 1.55;
+            font-size: 0.98rem;
+        }
+        .guide-block{
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .guide-block h3{
+            padding: 14px 18px;
+            background: #0b2b66;
+            color: #ffffff;
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+        .script-text{
+            padding: 18px;
+            background: #fafafa;
+            line-height: 1.65;
+            color: #1f2937;
+        }
+        .script-text a{
+            color: #045ff2;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .script-text a:hover{
+            text-decoration: underline;
+        }
+        .pause{
+            display: inline-block;
+            margin: 0 6px;
+            font-weight: 700;
+        }
+
+        /* ===== Shortcut zurück zum Abschluss-Part ===== */
+        .close-shortcut{
+            margin-top: 18px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .close-btn{
+            display: inline-block;
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: #22c55e;
+            color: #ffffff;
+            font-weight: 700;
+            text-decoration: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .close-btn:hover{
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(34, 197, 94, 0.35);
+        }
+
+
+        @media (max-width: 768px) {
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .intervention-header h2 {
+                font-size: 1.2rem;
+            }
+            
+            .formulierung {
+                padding: 15px;
+            }
+
+            .filters {
+                top: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📞 Follow-Up-Interventionen</h1>
+            <p>EDEKA Follow-Up: Einwandbehandlung & Abschluss-Shortcut</p>
+            <div style="margin-top: 15px; padding: 12px 20px; background: rgba(255,255,255,0.1); border-radius: 8px; font-size: 0.9rem; opacity: 0.9;">
+                <strong>📝 Hinweise:</strong> Alle Texte in [eckigen Klammern] sind Platzhalter und müssen an den individuellen Fall angepasst werden. Die Formulierungen basieren auf dem Beispiel einer EDEKA-Initiative.
+            </div>
+        
+        <div class="top-guide">
+            <div class="guide-intro">
+                <h2>🧭 Leitfaden: Follow-Up-Call (Standortwahl ausstehend)</h2>
+                <p><strong>Ziel:</strong> In unterminierten Spontangesprächen schnell die Führung übernehmen, Einwände sofort abfangen und anschließend sauber in den <a href="#closingPart">Abschluss-Part</a> zurückführen.</p>
+            </div>
+
+            <div class="guide-block">
+                <h3>1) Einstieg / Rollenverortung</h3>
+                <div class="script-text">
+                    <strong>💬 CALLER:</strong> „Guten Tag, <strong>[CALLER-NAME]</strong> mein Name, für <strong>[EDEKA]</strong>, grüß Sie.“
+                    <span class="pause">🟥</span> <em>– Pause –</em><br>
+                    „Herr/Frau <strong>[KUNDENNAME]</strong>, oder?“
+                    <span class="pause">🟥</span> <em>– Antwort abwarten –</em><br><br>
+
+                    „Rufe an wegen der EDEKA-Initiative, zu der Sie wohl bereits einige Gespräche mit unseren Kollegen hatten. Ich melde mich von der zentralseitigen Projektdirektion und bin grad dabei unsere finalen Prüfrunden vorzubereiten.“
+                    <span class="pause">🟥</span> <em>– Antwort abwarten –</em><br><br>
+
+                    „Ich hatte während ich dabei war, zu Ihnen zwei Rückmeldungen erhalten:
+                    <br><br>
+                    <strong>a)</strong> Seien Sie laut Herrn <strong>[CLOSER-NAME]</strong> wohl wirklich gut geeignet – begründet hat er dies durch: <strong>[CLOSER-INFOS]</strong>.
+                    <br>
+                    <strong>b)</strong> Haben Sie laut Frau <strong>[REIF / SCHULTE]</strong> das pflichtmäßige Info-Protokoll samt der Standortübersicht der EDEKA-Filialen erhalten.
+                    <br><br>
+                    Nun fehlt uns offenbar nur noch Ihre Rückmeldung zur Standortwahl – oder überhaupt, inwieweit wir Sie noch weiterhin berücksichtigen dürfen. Ich will nur grade der Fairness halber ausschließen, dass wir im Vergabeprozess weitermachen, ohne dass Sie die Gelegenheit hatten, sich gegebenenfalls darin anzuschließen.“
+                    <span class="pause">🟥</span> <em>– Antwort solange abwarten wie nötig –</em>
+                </div>
+            </div>
+
+            <div class="guide-block" id="closingPart">
+                <h3>2) Abschluss-Part (nach Einwandklärung)</h3>
+                <div class="script-text">
+                    <strong>💬 CALLER:</strong> „Alles klar. Wir befinden uns gerade in der Phase, in der die Vergabe für die einzelnen Regionen intern abgeschlossen wird. Dafür gibt es bei uns sogenannte Prüfrunden – das sind feststehende Termine, an denen bewertet wird, welcher Partner für welche Region in Frage kommt. Die nächsten beiden, die für Ihre Region relevant wären, finden am <strong>[DATUM 1]</strong> und am <strong>[DATUM 2]</strong> statt.“
+                    <span class="pause">🟥</span> <em>– kurze Pause –</em><br><br>
+
+                    „Das heißt im Klartext: Damit wir Sie überhaupt berücksichtigen können, müsste uns Ihre Standortauswahl bis dahin vorliegen. Ohne die können wir intern schlicht nicht weitermachen – egal, wie geeignet jemand ist.“
+                    <br><br>
+                    „Sobald Ihre Standortauswahl vorliegt, wird auf dieser Basis ein Angebotsformular erstellt. Das kommt von den Kollegen von <strong>FRAMEN</strong> – also dem Tochterunternehmen von Axel Springer, das die technische und administrative Seite verantwortet. Im Formular wird im Wesentlichen das deklariert, was ohnehin besprochen wurde – Leistungsdaten, Mindestreichweite, Kooperationszeitraum. Also nichts Neues, nur einmal formalisiert.“
+                    <span class="pause">🟥</span> <em>– kurze Pause –</em><br><br>
+
+                    „Man stimmt dem dann offiziell zu, indem man es signiert. Gilt zunächst als einseitige Willenserklärung – und wir dann handlungsfähig die Prüfung vorzunehmen. Wir behalten uns vor, das zu bestätigen oder eben nicht, je nachdem wie die interne Bewertung ausfällt. Erst dann kommt es zu einer endgültigen Vereinbarung. So ist der Ablauf – im Grunde sehr geradlinig.“
+                    <span class="pause">🟥</span> <em>– Antwort abwarten –</em><br><br>
+
+                    <strong>💬 CALLER:</strong> „Deswegen wäre es gut, wenn Sie zeitnah – am besten in den nächsten Tagen – Frau <strong>[REIF / SCHULTE]</strong> eine kurze Rückmeldung geben, für welche Standorte Sie berücksichtigt werden möchten. Dann können wir das intern entsprechend aufbereiten und Sie rechtzeitig in die nächste Prüfrunde einbeziehen.“
+                    <span class="pause">🟥</span> <em>– kurze Pause –</em><br><br>
+
+                    „Ich sage das nur, weil es in der Vergangenheit durchaus vorkam, dass sehr geeignete Kandidaten das Zeitfenster verpasst haben – nicht, weil sie nicht wollten, sondern weil sie schlicht zu spät dran waren. Das möchte ich in Ihrem Fall vermeiden.“
+                    <span class="pause">🟥</span> <em>– Antwort abwarten –</em><br><br>
+
+                    <strong>💬 CALLER:</strong> „Und noch etwas: Sollten bei Ihnen inzwischen Fragen aufgekommen sein, dann nutzen Sie am besten direkt den kurzen Draht zu mir. Ich gehöre zu denjenigen, die dieses Projektkonzept federführend mit aufgebaut haben – von der ersten Pilotphase an. Insofern gibt es denke ich wenige Fragen, auf die ich keine Antwort hab.“ <em>– Schmunzler –</em>
+                    <span class="pause">🟥</span> <em>– kurze Pause –</em><br><br>
+
+                    „Alles Gute &amp; wir hören somit sicherlich nochmal voneinander.“
+                    <span class="pause">🟥</span> <em>– Antwort abwarten –</em>
+                </div>
+            </div>
+
+            <div class="guide-block">
+                <h3>3) Wenn Einwände / Unsicherheit entstehen</h3>
+                <div class="script-text">
+                    <strong>Regel:</strong> Sobald der Kunde zögert, diskutiert oder „weich“ wird → direkt in die Interventionen springen (Mikro-Shortcuts, Suche oder Filter).<br>
+                    <strong>Nach Klärung:</strong> Unter jeder Intervention findest du den Shortcut <em>„✅ Einwand geklärt → Zum Abschluss-Part“</em>, der dich sofort zurück in den <a href="#closingPart">Abschluss-Part</a> führt.
+                </div>
+            </div>
+        </div>
+</div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number">13</div>
+                <div class="stat-label">Kritische Szenarien</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">100%</div>
+                <div class="stat-label">Praxiserprobt</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">⚡</div>
+                <div class="stat-label">Sofort einsetzbar</div>
+            </div>
+        </div>
+
+        <div class="sticky-header">
+            <div class="search-bar">
+                <div class="search-container">
+                    <input type="text" class="search-input" placeholder="Sofortsuche: Einwand, Szenario oder Stichwort eingeben..." id="searchInput">
+                    
+                    <div class="search-navigation" id="searchNavigation">
+                        <button class="nav-button" id="prevBtn" onclick="navigateToMatch(-1)">← Vorherige</button>
+                        <span class="search-info" id="searchInfo">1 von 3</span>
+                        <button class="nav-button" id="nextBtn" onclick="navigateToMatch(1)">Nächste →</button>
+                    </div>
+                    
+                    <div id="searchResults" style="margin-top: 10px; font-size: 14px; color: #666; display: none;"></div>
+                </div>
+            </div>
+
+            <div class="filters">
+                <div class="macro-shortcuts">
+                    <div class="shortcuts-label">🎯 MAKRO-SHORTCUTS:</div>
+                    <button class="filter-btn macro-btn active" data-filter="all">Alle Interventionen</button>
+                    <button class="filter-btn macro-btn" data-filter="framing">🎯 Framing</button>
+                    <button class="filter-btn macro-btn" data-filter="preis">💰 Preis & Budget</button>
+                    <button class="filter-btn macro-btn" data-filter="zweifel">❓ Zweifel & Skepsis</button>
+                    <button class="filter-btn macro-btn" data-filter="technik">⚙️ Technische Fragen</button>
+                </div>
+                
+                <div class="micro-shortcuts">
+                    <div class="shortcuts-label">⚡ MIKRO-SHORTCUTS:</div>
+                    <button class="filter-btn micro-btn" data-filter="intervention-1">"Bekomme ich Exklusivität?"</button>
+                    <button class="filter-btn micro-btn" data-filter="intervention-2">"Das ist nur Werbung!"</button>
+                    <button class="filter-btn micro-btn" data-filter="intervention-3">"Das kann man nicht messen"</button>
+                    <button class="filter-btn micro-btn" data-filter="intervention-4">"Wie ohne Kamerateam?"</button>
+                    <button class="filter-btn micro-btn" data-filter="intervention-5">"Sie sind nicht von EDEKA!"</button>
+                    <button class="filter-btn micro-btn" data-filter="intervention-6">"Standorte wechseln?"</button>
+                    <button class="filter-btn micro-btn" data-filter="intervention-7">"Früher raus?"</button>
+                    <button class="filter-btn micro-btn" data-filter="intervention-8">"Zu teuer!"</button>
+                    <button class="filter-btn micro-btn" data-filter="intervention-9">"Kürzere Laufzeit?"</button>
+                    <button class="filter-btn micro-btn" data-filter="intervention-10">"EDEKA weiß nichts davon"</button>
+                    <button class="filter-btn micro-btn" data-filter="intervention-11">"Wie messen Sie das?"</button>
+                    <button class="filter-btn micro-btn" data-filter="intervention-12">"Wieviele Leads?"</button>
+                    <button class="filter-btn micro-btn" data-filter="intervention-13">"Wie oft läuft der Spot?"</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="interventions-container" id="interventionsContainer">
+            
+            <!-- Intervention 1: Exklusivitätsfrage -->
+            <div class="intervention-card" data-category="zweifel" data-intervention="intervention-1">
+                <div class="intervention-header" onclick="toggleCard(this)">
+                    <h2>1. Exklusivitätsfrage</h2>
+                    <div class="scenario">Szenario: Kunde fragt, ob er eine Branchenexklusivität erhält</div>
+                    <div class="meta-comment">Meta-Kommentar: Erwartungsmanagement beachten, "tickende Zeitbombe" entschärfen - Exklusivität nicht ausschließen, aber auch nicht garantieren</div>
+                    <span class="expand-icon">▼</span>
+                    <!-- Versteckte Stichwörter für Suche -->
+                    <div style="display: none;">
+                        Exklusivität Branchenexklusivität Einziger Partner Alleinstellung Konkurrenz Mitbewerber Andere Makler Mehrere Partner Glaubwürdigkeit Vertrauen Authentizität Auswahlverfahren Vergabeverfahren Annahmequote Pressetafel Werbetafel Willkürlichkeit Einzugsgebiet Standortauswahl Parallelbelegung Privilegierter Partnerkreis
+                    </div>
+                </div>
+                <div class="intervention-content">
+                    <div class="formulierung">
+                        <h4>💬 Formulierung:</h4>
+                        <div class="formulierung-text">„Zunächst einmal – und das ist mir wichtig, das offen einzuordnen:
+Unsere Idealvorstellung ist tatsächlich, möglichst nur mit einem Partner pro Region zu arbeiten. Allein schon aus Gründen der Glaubwürdigkeit. Denn eine Empfehlung entfaltet ihre Wirkung ja erst dann vollständig, wenn sie eindeutig ist: ein Partner, eine klare Zuordnung, kein Neben- oder Nacheinander.
+
+Genau deshalb achten wir sehr strikt darauf, dass aus dem Projekt keine Sammelfläche wird. Keine Abfolge beliebiger Anbieter, keine Durchreichung an beliebig viele Unternehmen, unabhängig von Branche oder Qualität. Es darf zu keinem Zeitpunkt der Eindruck entstehen, es handle sich um eine frei buchbare Werbefläche oder um eine kommerzielle Anschlagtafel.
+
+Der Endkunde – der EDEKA-Kunde, der den Markt betritt – soll niemals das Gefühl haben, dass hier jeder präsent ist, der bereit war, ausreichend Budget einzusetzen. Würde dieser Eindruck entstehen, wäre der Empfehlungscharakter sofort zerstört. Und genau das vermeiden wir.
+
+Deshalb halten wir den Partnerkreis bewusst so klein wie irgend möglich. Denn je mehr Unternehmen beteiligt wären, desto willkürlicher würde die Wahrnehmung. Und Willkür ist das Gegenteil einer bewussten Empfehlung. Sie würde den PR- und Kooperationscharakter vollständig verwässern.
+
+Arbeiten wir also möglichst nur mit einem Partner pro Region?
+Ja.
+Ist das formal garantiert?
+Nein – und zwar aus einem sehr konkreten Grund.
+
+Im Auswahl- und Vergabeprozess geben wir Partnern niemals Standorte oder Einzugsgebiete vor. Das tun wir ganz bewusst nicht, weil jedes Unternehmen seinen eigenen Wirkungskreis hat. Eine künstliche Vorgabe würde weder Ihrer Realität noch unserer Projektlogik gerecht.
+
+Sollte es in seltenen Einzelfällen zu Überschneidungen kommen, ist entscheidend – und das beruhigt die meisten Partner sehr –, dass die Ausspielung so gesteuert ist, dass ein Endkunde bei einem Marktbesuch nicht mehreren Partnern derselben Branche begegnet.
+Heißt: Selbst wenn theoretisch ein weiterer Partner an einem Ihrer Standorte vertreten wäre, nimmt der Kunde das nicht wahr. Die Wahrnehmung bleibt exklusiv. Und darauf kommt es letztlich an.
+
+Das entspricht allerdings nicht unserem Ideal. Deshalb greifen zusätzliche Mechanismen, die solche Überschneidungen von vornherein sehr unwahrscheinlich machen. Der wichtigste davon ist die Annahmequote.
+
+Diese liegt bei etwa 1–2 %. Das bedeutet: Von allen grundsätzlich geeigneten Unternehmen werden am Ende nur ein bis zwei Prozent tatsächlich Teil des Projekts. Das ist eine extrem geringe Quote. In der Praxis heißt das: Sie bewegen sich in einem sehr engen, privilegierten Partnerkreis.
+
+Der Hinweis auf mögliche Überschneidungen ist daher kein Hinweis auf eine Wunschsituation, sondern lediglich die Erfüllung unserer Hinweispflicht – auf ein theoretisches Szenario, nicht auf die gelebte Realität des Projekts.“</div>
+                    </div>
+                    <div class="zusatz-option">
+                        <h5>🔁 Zusatzoption (wenn Kunde nicht davon abkommt):</h5>
+                        <div class="formulierung-text">„Wenn Sie erlauben, möchte ich an der Stelle ganz offen mit Ihnen sein – und zwar völlig wertfrei:
+Wenn man sich Ihre aktuelle Marktsituation anschaut, dann muss man feststellen, dass echte Exklusivität in Ihrer Branche faktisch nicht existiert. Auf den relevanten Plattformen sind Sie einer von Hunderten, teils von Tausenden. In den Suchergebnissen konkurrieren Sie mit jedem Anbieter, der ein Budget einsetzt – unabhängig von Erfahrung, Qualität oder Marktstellung.
+
+Auch die meisten Kooperationen, die Unternehmen Ihrer Branche eingehen, enthalten keinerlei Exklusivitätslogik. Das ist kein Vorwurf, sondern schlicht der Status quo.
+
+Und genau vor diesem Hintergrund wird klar, was wir hier eigentlich anbieten:
+Nicht eine formale Exklusivpartnerschaft auf dem Papier – sondern das Nächstmögliche, was man in der Praxis erreichen kann. Deutlich näher an Exklusivität als alles, was Sie aus Ihrer bisherigen Öffentlichkeitsarbeit kennen.
+
+Wir zementieren das nicht vertraglich, weil der Vergabeprozess es nicht zulässt, Einzugsgebiete festzuschreiben oder nach Zufall oder Höchstgebot zu vergeben. Und den Höchstbietenden zu bevorzugen, kommt für uns ohnehin nicht infrage.
+
+Der entscheidende Punkt – den viele anfangs übersehen – ist aber folgender:
+Die Exklusivität ist faktisch eingebaut. Und zwar über die Reichweite.
+
+Wir garantieren Ihnen eine Mindestreichweite von [XY] Kundenkontakten über den Kooperationszeitraum. Diese Reichweite ist vertraglich zugesichert und wird laufend dokumentiert.
+
+Wäre dieselbe Fläche mit zahlreichen weiteren Partnern belegt, würde Ihre Präsenz zwangsläufig verdrängt. Sie würden Sendezeit verlieren, Sichtbarkeit verlieren – und genau in diesem Moment könnten wir die garantierte Reichweite nicht mehr einhalten.
+
+Heißt im Umkehrschluss:
+Allein die Tatsache, dass wir diese Reichweite garantieren, ist der praktische Beweis dafür, dass der Partnerkreis eng gehalten wird. Es ist rechnerisch unmöglich, [XY] Kundenkontakte zu gewährleisten und gleichzeitig beliebig viele Partner auf derselben Fläche zu platzieren.
+
+Die Reichweitengarantie ist damit eine faktische Exklusivitätsgarantie – nicht auf dem Papier, sondern in der Mechanik des Projekts.
+
+Und genau das unterscheidet dieses Modell von allem, was Sie bislang kennen:
+Hier sind Sie nicht einer von vielen.
+Hier sind Sie Teil eines selektiven Kreises mit einer Annahmequote von 1–2 %.“</div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Intervention 2: Framing-Angriff -->
+            <div class="intervention-card" data-category="framing" data-intervention="intervention-2">
+                <div class="intervention-header" onclick="toggleCard(this)">
+                    <h2>2. Framing-Angriff / "Das ist nur Werbung"</h2>
+                    <div class="scenario">Szenario: Kunde entlarvt das Projekt als reine Werbemaßnahme/Displaywerbung</div>
+                    <div class="meta-comment">Meta-Kommentar: Framing um jeden Preis aufrechterhalten, "all-in gehen", notfalls Kunde verlieren</div>
+                    <span class="expand-icon">▼</span>
+                    <!-- Versteckte Stichwörter für Suche -->
+                    <div style="display: none;">
+                        Werbung Werbefläche Displaywerbung Werbekampagne Framing Wahrnehmung Eindruck Empfehlung vs Werbung Restaurant-Empfehlung Flyer Sprachrohr Kommunikationsmittel Mittel zum Zweck Pilotphase Herleitung Effizienz Vertrauensaufbau EDEKA-Kontext Werbeplatzbuchung Pressetafel
+                    </div>
+                </div>
+                <div class="intervention-content">
+                    <div class="formulierung">
+                        <h4>💬 Formulierung:</h4>
+                        <div class="formulierung-text">"Ich verstehe, dass dieser Eindruck entstehen kann, absolut. Sie verstehen jedenfalls richtig, dass wir da mit einer digitalen Tafel arbeiten, die auch dieses Projekt kommunizieren soll, aber: Das ist keine Werbefläche zum Selbstzweck - ganz wichtig zu verstehen und das ist auch der Unterschied – genauso wie der Unterschied zwischen einer Empfehlung und einer Werbung.
+
+Wenn Ihnen eine Person, der Sie vertrauen, eine Empfehlung gibt, eine Restaurant-Empfehlung gibt, ist ja nicht dasselbe, wie wenn jemand Fremdes nur vom Restaurant Flyer verteilt. Das sind keine Flyer die wir verteilen, also das ist keine klassische Werbemaßnahme, sondern es geht darum, einen Empfehlungscharakter entstehen zu lassen.
+
+Man braucht ja irgendein Kommunikationsmittel, irgendein Mittel, irgendein Sprachrohr um diese Kommunikation und um diese Empfehlung auszusprechen. Ja, nun können wir ja nicht dort ständig Personal aufstellen, wie ich das auch in der Herleitung innerhalb der Pilotphase erklärt habe, die sich darum kümmern, dass jeder Kunde von dieser Empfehlung mitbekommt.
+
+Also: Die effizienteste Lösung im [EDEKA]-Umfeld, auserkorene Dienstleister bekannt zu machen und zugänglich zu machen, um damit das Ziel zu erreichen, dass Kunden die den Bedarf haben, auch künftig im [EDEKA]-Markt fündig werden. So ist die Methode, die sich dabei am effektivsten/reichweitenstärksten herausgestellt hat, die digitale Kommunikation.
+
+Aber man kann es nicht auf die digitale Kommunikation reduzieren. Also das ist nur ein Mittel zum Zweck. Es ist so, dass wir mit den Mitteln des digitalen Marketings einer Empfehlung zum Durchbruch verhelfen und dafür sorgen, dass wir durch den [EDEKA]-Kontext beim [EDEKA]-Kunden auch eine hohe Vertrauen dem verpartnerten Unternehmen gegenüber aufbauen. Und das wird das Ziel der ganzen Zusammenarbeit sein. Verstehen Sie, was ich meine?"</div>
+                    </div>
+                    <div class="zusatz-option">
+                        <h5>🔥 Zusätzliche Verstärkung:</h5>
+                        <div class="formulierung-text">"Glauben sie mir, würde es dabei nur um eine Werbeplatzbuchung gehen, würden wir uns diese gesamte Arbeit ersparen und auch ich würde mir dann bequemerweise deutlich weniger Zeit nehmen. Wenn man kurz ein Werbeangebot platziert, über bestimmte Parameter verhandelt und man einfach sich dazu buchen kann – ist es für beide Seiten komfortabler. Jeder, der dabei sein möchte, kann sich dann eine Zeit dazu mieten, aber: das ist in dem Fall nicht so. Das soll nicht zu einer Pressetafel, eben nicht zu einer kommerziellen Werbepartnerschaft ausufern. Denn dies würde ja komplett den ernst gemeinten Empfehlungscharakter der Zusammenarbeit sabotieren und deswegen achten wir darauf."</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intervention 3: Messbarkeitseinwand -->
+            <div class="intervention-card" data-category="zweifel" data-intervention="intervention-3">
+                <div class="intervention-header" onclick="toggleCard(this)">
+                    <h2>3. Messbarkeitseinwand</h2>
+                    <div class="scenario">Szenario: Kunde sagt, man könne das Projekt nicht messen</div>
+                    <div class="meta-comment">Meta-Kommentar: Selbstbewusst sein, dass es keine Performance-Marketing-Kampagne ist. Gegenteilige Position einnehmen und als Vertrauensaufbaumaßnahme framen.</div>
+                    <span class="expand-icon">▼</span>
+                    <!-- Versteckte Stichwörter für Suche -->
+                    <div style="display: none;">
+                        Messbarkeit Messen Tracking Erfolgskontrolle Performance-Marketing Meta Ads Google Ads ROI Return on Investment ROAS Return on Ad Spend Reichweiten-Garantie Sichtkontakte Dashboard Cockpit Vertrauensaufbau Öffentlichkeitsarbeit Erwachsenenmarketing Empfehlungsmarketing Empfehlungssystem Lagerfeuer-Analogie Thermometer
+                    </div>
+                </div>
+                <div class="intervention-content">
+                    <div class="formulierung">
+                        <h4>💬 Formulierung Variante 1:</h4>
+                        <div class="formulierung-text">"Es ist schon richtig, dass es definitiv nicht die selbe Messbarkeit liefert wie die, die man vielleicht aus der Performance Marketing Welt kennt. Also ich spreche dabei von Meta Ads, Google Ads etc. Dieses Maß an Messbarkeit wird es in dieser Konstellation nicht geben. Was allerdings nicht bedeutet, dass es gar nicht messbar wäre, denn wir haben ja über die Reichweiten-Garantie ein Werkzeug oder ein Mechanismus innerhalb dieses Projekts installiert, was den künftigen Partnern ermöglichen wird, in Echtzeit mitverfolgen zu können, wieviel Reichweite erzielt wird.
+
+Wir sprechen dabei von einer realen Reichweite, denn es ist ja so, dass mit dem Projekt [XY-viele] Sichtkontakte über den Partnerschaftszeitraum versprochen werden. Das ist ein Versprechen, was damit begründet ist, dass die Partner sehr wohl auch wissen sollen, worauf sie sich einlassen. Zum einen damit die Unternehmen sich auch auf eine gewisse Tragweite einstellen können, vor allem mit Hinblick auf die eigenen Kapazitäten, aber auch, damit die Partner einen gewissen Partnerschaftsstandard erhalten, eine verlässliche Qualitätsgarantie innerhalb der Partnerschaft geliefert bekommen.
+
+Das Entscheidende: Ist trotzdem der wahre Nutzen dieser Kooperation messbar? Denn der wahre Nutzen einer solchen Zusammenarbeit ist der Vertrauensaufbau. Und der Vertrauensaufbau ist einfach die nächst höhere Stufe in der Öffentlichkeitsarbeit.
+
+Online-Marketing betreiben ja mittlerweile alle Dienstleister, auch die, die vielleicht nur über zwei, drei Mann verfügen, gerade erst vor wenigen Wochen als Quereinsteiger begonnen haben und schon sogar den besseren Anbietern die Kunden abgreifen. Genau hier ist es dann entscheidend, gegenüber der Konkurrenz einen Vorsprung zu haben, indem man sich auch in Umfeldern positioniert, wo kein anderer Anbieter positioniert ist.
+
+Und deswegen sprechen wir auch hier meistens sehr dreist von Erwachsenenmarketing, weil man durch solche Kooperationen, durch solche Kampagnen eben zu den Erwachsenenunternehmen allmählich dazugehört und das Kindesalter bereits absolviert hat. Das ist ja auch der Eindruck, der dadurch in der Öffentlichkeit entsteht. Und das ist eine Art von Vertrauensaufbau, den man nicht messen kann, den man allerdings sehr wohl zu spüren bekommt.
+
+Abschließend will ich ganz ehrlich seint: Wer hier eine weitere Performance-Maßnahme erwartet, bei der Klickkosten per Lead, die ROAS, also Return on Ad Spend usw. direkt messen kann, der ist leider hier falsch. Den würden wir auch nicht weiter als Partner in Betracht ziehen. Hierbei geht es um weitaus mehr."</div>
+                    </div>
+                    <div class="formulierung">
+                        <h4>💬 Formulierung Variante 2 (Empfehlungsnarrativ):</h4>
+                        <div class="formulierung-text">"Es ist ja generell, wie ich erwähnte, orientiert sich ja unsere Zusammenarbeit, die Kampagne, die wir hiermit vorhaben umzusetzen, sehr stark am Modell des klassischen Empfehlungsmarketings. Wie gesagt auch im Tagesgeschäft, das in einer jeden Dienstleistungsbranche vorkommt. Und zwar, dass wenn ein Kunde mit dem Dienstleister die Arbeit abgeschlossen hat, positive Erfahrungen gemacht hat, sich dann daraufhin bereit fühlt und teilweise auch von alleine schon, aufgrund dieser sehr starken Überzeugung, die durch diese sehr starke positive Erfahrung entstanden ist, den Dienstleister an einen nahestehenden Menschen weiter zu empfehlen, an eine Person, die auch dieselbe Nachfrage hat und dasselbe Bedürfnis nach dieser Dienstleistung hat und diese weitere dritte Person hat dann auch keinen Grund diese Empfehlung abzulehnen. Denn diese Empfehlung kommt von einem Menschen, welchem er vertraut.
+
+Und das ist auch genau das, was wir tun. Und zwar nutzen wir im positiven Sinne das bestehende Vertrauensverhältnis zwischen dem [EDEKA]-Kunden und dem [EDEKA] aus. Denn wir wissen, der [EDEKA]-Kunde ist ja dort ein loyaler Kunde, sucht diesen Kampagnenstandort schon seit mehreren Jahrzehnten teilweise auf, hat schon ein gewisses Vertrauensverhältnis der Marke gegenüber und getreu dem Motto: lieber Kunde, wenn Sie schon der Marke [EDEKA] in allen anderen Angelegenheiten vertraut haben, so dürfen wir künftig in der Angelegenheit [EDEKA] dem Partner [EDEKA] vertrauen.
+
+Empfehlungen sind für ein jedes Unternehmen wichtig, nur in der Regel gibt es keine Möglichkeit, das Thema Empfehlungen großartig zu systematisieren. Klar, man kann immer aktiv den Kunden danach fragen, ob dieser nicht einen empfehlen würde. Aber trotzdem ist meistens die Empfehlung kein eigenständiges System. Und genau das wird hiermit geboten: ein eigenständiges Empfehlungssystem.
+
+Nur, und damit ist das keine Maßnahme, die mit den Maßstäben der Online-Marketing-Welt gemessen werden kann. Das ist so wie als würde man ein Lagerfeuer mit einem Thermometer messen. Ja klar, also es heiß, aber dass es Licht spendet in der Dunkelheit, Menschen zusammenbringt oder Atmosphäre schafft, sagt der Thermometer eben nicht aus. Das ist das, was ich damit sagen möchte, dass man diese Maßstäbe leider nur sehr bedingt anwenden kann."</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intervention 4: Spot-Erstellung -->
+            <div class="intervention-card" data-category="technik" data-intervention="intervention-4">
+                <div class="intervention-header" onclick="toggleCard(this)">
+                    <h2>4. Details zur Spot-Erstellung</h2>
+                    <div class="scenario">Szenario: Kunde fragt, wie die Spot-Erstellung abläuft, da kein Kamerateam vorbeikommt</div>
+                    <span class="expand-icon">▼</span>
+                    <!-- Versteckte Stichwörter für Suche -->
+                    <div style="display: none;">
+                        Spot-Erstellung Video Videoproduktion Kamerateam Drehtermin Basismaterial Logo CI Corporate Identity Designsprache Individuelle Vorgaben Korrektur Freigabe Qualitätsanspruch Hochwertiger Spot Kreativleute Agentur
+                    </div>
+                </div>
+                <div class="intervention-content">
+                    <div class="formulierung">
+                        <h4>💬 Formulierung:</h4>
+                        <div class="formulierung-text">"Ja, schauen Sie: Kamerateams können wir natürlich nicht beauftragen, weil, wie ich schon erwähnt, die Termine dafür zu organisieren sprengt den Rahmen bei Weitem – das ist ein administrativer Aufwand jenseits von Gut und Böse. Da müsste man sich vermutlich bis Ende nächsten Jahres die Zeit nehmen, um das Projekt überhaupt vorzubereiten oder zum Start zu bringen und startklar zu machen.
+
+Mit den modernen Mitteln heutzutage ist ja fast alles möglich. Insofern machen wir uns da über eine qualitative Erstellung keine Sorgen. Was dabei genau passieren wird, ist, dass wir natürlich etwas Basismaterial von dem jeweiligen Partner ausgehändigt bekommen. Also zu Basismaterial kann gehören: Logo, CI, also Corporate Identity, in welcher Designsprache spricht man als Unternehmen, welche Farben verwendet man da, gibt es da eine bestimmte bevorzugte Typografie, also Schriftarten, welchen Stil bevorzugt man, eher konservativ, eher plakativ.
+
+Und das ist der eigentliche Knackpunkt: Es wird alles sehr individuell besprochen. Deswegen kann ich auch darauf keine pauschale Antwort geben. Was ich pauschal beantworten kann, ist, dass der Qualitätsanspruch sehr, sehr hoch ausfallen wird.
+
+Und wie gesagt, der Partner liefert das Basismaterial und auf Basis dieser Materialien wird dann ein sehr, sehr hochwertiger Spot von den jeweiligen Kreativleuten erstellt. Und der wird dann auch erst dann als fertig erstellt markiert, wenn vom jeweiligen Partner eine Freigabe kommt. Das heißt endgültig entscheidet der Partner darüber, ob der Spot so aussieht wie er ihn haben möchte und das ist das eigentliche Entscheidende. Dann wird zum Beispiel der erste Entwurf erstellt, der erste Entwurf wird dem Partner zur Verfügung gestellt und dann kann nochmal eine Korrektur durchgeführt werden und in der Regel ist dann auch die Spot-Erstellung schon bereits fertig."</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intervention 5: "Sie sind gar nicht von [EDEKA]" -->
+            <div class="intervention-card" data-category="zweifel" data-intervention="intervention-5">
+                <div class="intervention-header" onclick="toggleCard(this)">
+                    <h2>5. "Sie sind gar nicht von [EDEKA]"</h2>
+                    <div class="scenario">Szenario: Kunde wirft vor, dass man nicht vom Kampagnenstandort (z.B. EDEKA) sei</div>
+                    <div class="meta-comment">Meta-Kommentar: Selbstbewusst reagieren, nicht beeindruckt fühlen, so tun als wäre dem Kunden ein Missverständnis unterlaufen</div>
+                    <span class="expand-icon">▼</span>
+                    <!-- Versteckte Stichwörter für Suche -->
+                    <div style="display: none;">
+                        Zugehörigkeit Nicht von EDEKA Missverständnis Klärung Struktur Rollenaufteilung Konsortium Axel Springer Framen zaptar Zentral gesteuert Projekt-Komplexität Bürokratie Effizienz Schnelligkeit Aufgabenverteilung Partnerschaftsauswahl
+                    </div>
+                </div>
+                <div class="intervention-content">
+                    <div class="formulierung">
+                        <h4>💬 Formulierung:</h4>
+                        <div class="formulierung-text">"Nein, nein. Es ist ja so, dass bei solchen Projekten und einer solchen Größenordnung an PR- und Marketing-Vorbereitungen, dass sich eine Marke wie [EDEKA] natürlich sehr weitreichend unterstützen lässt und das ist nicht nur gut so, weil wir damit einiges mehr, sondern auch einiges schneller erreichen. Es ist übrigens auch ziemlich typisch und üblich. [EDEKA] ist ja ein Lebensmitteleinzelhändler, kein Marketinghaus. Und das ist nicht das erste Mal, dass ich hier [EDEKA] in Sachen PR durch den Axel Springer Medienkonzernen unterstützt lässt. Auch gab es in der Vergangenheit schon andere Pressethemen, wo man sich gegenseitig ausgeholfen hat und deswegen gab es da schon Verbindung. Nun ist es so, dass das Tochterunternehmen von Springer, also FRAMEN, sich als ein eingemachtes Nest versteht für Kampagnen dieser Art, denn: die haben die digitale Infrastruktur die haben den Algorithmus der dafür erforderlich ist, die haben also alles schon bereits aufgebaut, was man braucht um für die Partnerschaft einen fruchtbaren Boden zu haben. Und deren Partnerunternehmen, zaptar, wiederum, die kümmern sich eben um die Kommunikation des Projekts, haben den Hut aufgesetzt bekommen, die Partnerschaftsauswahl nicht nur begleiten, sondern auch die potenziellen Kandidaten dem internen Gremium gegenüber vorzuschlagen – und deswegen gehöre ich zu deren Fraktion. Wissen Sie, wenn das bei [EDEKA] alleine liegen würde dann – glauben Sie mir – müsste das wie es für Konzerne typisch ist über viele bürokratische Instanzen durchlaufen und deswegen ist diese Rollenaufteilung auch sehr vorteilhaft."</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intervention 6: Standorte wechseln -->
+            <div class="intervention-card" data-category="technik" data-intervention="intervention-6">
+                <div class="intervention-header" onclick="toggleCard(this)">
+                    <h2>6. Standorte während Laufzeit wechseln</h2>
+                    <div class="scenario">Szenario: Kunde fragt, ob man während der Laufzeit die Standorte wechseln kann</div>
+                    <span class="expand-icon">▼</span>
+                    <!-- Versteckte Stichwörter für Suche -->
+                    <div style="display: none;">
+                        Standortwechsel Märkte tauschen Flexibilität Anpassung Laufzeit Vertragsdauer Alternative Standorte Neue Standorte Partnerzugang
+                    </div>
+                </div>
+                <div class="intervention-content">
+                    <div class="formulierung">
+                        <h4>💬 Formulierung:</h4>
+                        <div class="formulierung-text">"Ja, definitiv. Es läuft darauf hinaus, dass jeder Partner innerhalb der Kooperation die permanente Möglichkeit erhält die bestehenden Standorte auch auszutauschen mit alternativen Standorten. Auch dann, wenn beispielsweise neue Standorte hinzukommen, weil es ist ja so, dass manche der EDEKA-Märkte erst noch dem Projekt angeschlossen werden, ein Jahr oder später. Und wenn dies dann der Fall ist, erhalten auch die bestehenden Partner Zugang zu diesen Standorten. Das ist definitiv möglich."</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intervention 7: Früher aussteigen -->
+            <div class="intervention-card" data-category="preis" data-intervention="intervention-7">
+                <div class="intervention-header" onclick="toggleCard(this)">
+                    <h2>7. Früher aus dem Vertrag aussteigen</h2>
+                    <div class="scenario">Szenario: Kunde fragt nach Ausstiegsmöglichkeiten bei der 3-Jahres-Bindung</div>
+                    <div class="meta-comment">Meta-Kommentar: Als positives Merkmal framen, das die Kooperation substanziell macht</div>
+                    <span class="expand-icon">▼</span>
+                    <!-- Versteckte Stichwörter für Suche -->
+                    <div style="display: none;">
+                        Ausstieg Kündigung Vertragsende Früher raus Ausstiegsklausel Notausgang Laufzeit Vertragsbindung 3 Jahre Garantie Selbstbewusstsein Tragweite Pilotphase Wenn-Dann-Regeln Standardisierung Fairness Glaubwürdigkeit Authentizität One-Night-Stand PR-Ziele
+                    </div>
+                </div>
+                <div class="intervention-content">
+                    <div class="formulierung">
+                        <h4>💬 Formulierung:</h4>
+                        <div class="formulierung-text">"Es gibt da keine Ausstiegsklauseln oder Notausgänge für bestimmte Situationen. Klar gibt es den Fall, dass, wenn das verpartnerte Unternehmen plötzlich vor die Wand fährt, Konkurs anmeldet, dass es dann auch keinen Sinn macht, den Kunden ein Unternehmen zu empfehlen, wo man nur vor geschlossenen Türen steht. Das steht ja außer Frage. Das ist allerdings jetzt der Extremfall.
+
+Für alle anderen Situationen ist nicht vorgesehen, dass wir da irgendwelche Notausgänge ermöglichen. Denn dies würde auch nicht unserem Selbstbewusstsein entsprechen, da wir die Tragweite des Projekts kennen – also dank der Pilotphase das Erfolgspotenzial kennen. Und ich kann Ihnen so viel sagen: Wäre das ein Projekt, was rein gar nicht funktioniert, also: keine Reichweite erzielt, keinen Effekt hervorbringt, dann würden Sie und ich heute miteinander gar nicht sprechen. Dann würden wir auf unserer Seite uns erst recht nicht die Mühe machen, das ganze Projekt mit Zuschuss und internen finanziellen Mitteln in der kompletten DACH-Region aufzubauen und dann noch zu subventionieren.
+
+Die Tatsache, dass wir miteinander sprechen, ist der beste Beweis dafür, dass wir hier von einer Sache sprechen, bei der Ausgänge für Notsituationen, nicht erforderlich sein dürfen. Und wäre dies so, würden wir das Projekt, wie gesagt, nicht aufziehen und würden wir nicht deutschlandweit in der gesamten DACH-Region vorbereiten.
+
+Darüber hinaus sind wir zum Entschluss gekommen, dass wenn wir diese Zusammenarbeit von irgendwelchen Wenn-Dann-Regeln abhängig machen würden, beispielsweise dass: wenn dann mal in einem Monat die Anfragen geringer ausfallen als erwartet oder wenn mal beim Unternehmen die Prioritäten sich verschieben, dann darf man auch die Zusammenarbeit unangekündigt beenden – so müsste man mit jedem einzelnen Unternehmen, das hier an der Partnerschaft teilnehmen möchte, individuelle Regeln aushandeln.
+
+Das würde zum einen dazu führen, dass wir enorm lange Gespräche führen müssen, und zum anderen ein unfaires Ungleichgewicht unter den Partnern entstehen kann.
+
+Wir arbeiten ja absichtlich mit einem standardisierten Kooperationsmodell, sozusagen eine Kampagne von der Stange. Wir nehmen absichtlich keine Maßanfertigungen vor, weil das für Maßanfertigungen typisch ist, dass die viel Zeit in Anspruch nehmen. Und würden wir jetzt auch mit den potenziellen Unternehmen, die noch gar nicht ausgewählt sind, erst mal Verhandlungsgespräche darüber führen, welche Wenn-Dann-Regeln eingesetzt werden sollten, dann würden wir mit dem Projekt nie fertig werden.
+
+Das andere ist – wie gesagt – es gäbe dann auch häufig ein Ungleichgewicht. Weil der eine Partner eventuell fairer behandelt als der andere. Vielleicht existiert beim einen dann eine Wenn-Dann-Regel, die vorteilhafter ist als beim anderen Partner, und mit der Standardisierung des Projekts wollen wir natürlich auch eine gewisse Fairness innerhalb des Projekts unter den Partnern herstellen.
+
+Deswegen gibt es da jetzt keine Ausstiegsklauseln. Wir haben ja mit der Partnerschaftsdauer auch vor, vor allem die Authentizität und Glaubwürdigkeit zu stärken. Und wenn da jetzt die Partner ständig deren Prioritäten wechseln und wir deswegen die Partner wechseln müssen, dann können wir nicht von einer ernst gemeinten, glaubwürdigen Empfehlungspartnerschaft sprechen."</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intervention 8: Preis zu hoch -->
+            <div class="intervention-card" data-category="preis" data-intervention="intervention-8">
+                <div class="intervention-header" onclick="toggleCard(this)">
+                    <h2>8. Preis zu hoch</h2>
+                    <div class="scenario">Szenario: Kunde empfindet den Preis als zu hoch</div>
+                    <div class="meta-comment">Meta-Kommentar: Signal, dass Kunde nicht zur Zielgruppe gehört; nicht jeden Einwand behandeln müssen</div>
+                    <span class="expand-icon">▼</span>
+                    <!-- Versteckte Stichwörter für Suche -->
+                    <div style="display: none;">
+                        Preis Kosten Zu teuer Budget Preisdiskussion Verhandlung Rabatt Vergleich Gegenangebot Wert Wertanker Markenassoziation Vertrauenstransfer Prestige Autorität Bezuschussung Subventionierung Spot-Wert Nutzungsrechte Individuelles Gebot
+                    </div>
+                </div>
+                <div class="intervention-content">
+                    <div class="formulierung">
+                        <h4>🔍 Einstiegsfrage:</h4>
+                        <div class="formulierung-text">"Haben Sie das mit irgendeiner anderen Maßnahme verglichen, dass Sie zu dieser Einschätzung kommen?"</div>
+                    </div>
+                    <div class="formulierung">
+                        <h4>💬 Hauptformulierung:</h4>
+                        <div class="formulierung-text">"Schauen Sie, ich muss Ihnen gegenüber so deutlich wie möglich zu machen, weil ich denke, auch Ihnen ist damit geholfen, dass Ihnen da keine Information ausbleibt. Es ist wirklich so, dass sich solche Kooperationen, diese Art von Maßnahmen, normalerweise in einem viel höheren – vier bis gar fünfstelligen – Preisbereich monatlich bewegen.
+
+Wir sprechen hier von vielen Faktoren, die in den Wert einer solchen Maßnahme einfließen. Es gibt beispielsweise in der Online-Welt vielleicht ein oder zwei Faktoren anhand derer der Preis der Marketingmaßnahme, des Marketingbudgets gewertet wird. Und zwar, wie viel kostet mich ein Lead, den ich dadurch generiere? Wie viel kostet mich ein Klick, der durch die Kampagne generiert wird? Und anhand dieser Währung werden dann Maßnahmen untereinander verglichen.
+
+Hier gibt es weitaus mehr Parameter die eine Rolle spielen. Allen voran die Markenassoziation, der Vertrauenstransfer durch die Marke [EDEKA], die Tatsache in einem solchen Umfeld empfohlen und erwähnt zu werden, da geht es um gewissermaßen auch Prestige, Autorität, die man sich aufbaut, eine verbesserte Wahrnehmung der eigenen Marke, die man sich dadurch auch aufbaut.
+
+Als Unternehmen hat man nun mal in der heutigen Zeit bei der Vielzahl von Mitbewerbern immer die Schwierigkeit, einen Kanal für sich alleine zu nutzen. Hiermit haben wir einen Kommunikationskanal, der bislang ungenutzt geblieben ist. Auch das ist im Wert der Sache kaum messbar. Aber wie viele Kanäle gibt es in der Öffentlichkeitsarbeit, die bislang schon verbraucht worden sind?
+
+Allen voran beispielsweise die Online-Kanäle, bei denen man halt weiß, dass man sich da immer die Bühne teilen muss, dass es da immer darum geht, dass derjenige mit dem größeren Marketingbudget meistens auch mehr Sichtbarkeit erlangt und viele andere in den Hintergrund geraten. Und hiermit haben wir eine Möglichkeit geschaffen, die Kunden auf eine Art und Weise anzusprechen, wie sie nicht gewohnt sind und somit schon im Vornherein viel aufgeschlossen sind der Sache gegenüber, mal davon abgesehen dass wir hier mit einem Empfehlungsmodell arbeiten.
+
+Wie viel ist es dann einem wert, dass man systematisch und kontinuierlich im Umfeld einer Marke empfohlen wird, die sozusagen zu den Vertrauenspersonen der eigenen Zielgruppe gehört. Empfehlungen kommen ja immer von Vertrauenspersonen. Und die Frage, die man sich als in Anbieter in der freien Marktwirtschaft ja meistens stellen sollte, ist: Welcher Person vertraut mein Zielkunde? Wenn mein Zielkunde ein [Haus- und Gartenbesitzer] ist, beispielsweise, der grundsätzlich daran interessiert wäre, auch [seine eigenen vier Wände energetisch zu sanieren], dann muss man sich fragen, wem vertraut dieser Kunde?
+
+Und wenn der Kunde ein loyaler Stammkunde, beispielsweise bei [EDEKA] ist, dann gibt es da eine gewisse Vertrauensbasis. Wie viel bin ich nun bereit, für diese Vertrauensbasis zu investieren, um wiederum davon profitieren zu können? Und hier wird von unserer Seite aus nicht mal eine große Investitionsbereitschaft verlangt.
+
+Daher ist Ihr Feedback hierzu zugegebenermaßen eher selten. Das kann ich trotzdem natürlich nachvollziehen. Wenn man das mit den falschen Dingen vergleicht, kommt man zu einem solchen Entschluss. Aber wir haben das Projekt hier weitestgehend bezuschusst. Wir sorgen dafür auch, dass die ganzen grafischen Vorbereitungen wie die Videospot-Erstellung von unserer Seite aus übernommen werden. Die Nutzungsrechte eines solchen Spots, der gut und gerne in einem vier- bis fünfstelligen Bereich liegen könnte, werden übertragen.
+
+Also der Wert der Sache spricht für sich. In der Bilanz kann ich Ihnen sagen, werden wir nicht mehr einnehmen, als wir ausgeben (wenn wirr berücksichtigen, dass für die digitale Infrastruktur eine hohe siebenstellige Summe in die Hand genommen wurde, um das Ganze in der DACH-Region überhaupt erst vorzubereiten.)
+
+Wäre das unter diesen Gesichtspunkten im Bereich des Machbaren oder sagen Sie, das übersteigt Ihre Mittel?"</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intervention 9: Kürzere Laufzeit -->
+            <div class="intervention-card" data-category="preis" data-intervention="intervention-9">
+                <div class="intervention-header" onclick="toggleCard(this)">
+                    <h2>9. Kürzere Laufzeit gewünscht</h2>
+                    <div class="scenario">Szenario: Kunde möchte die 3-Jahres-Laufzeit verkürzen</div>
+                    <div class="meta-comment">Meta-Kommentar: Nicht aus der Ruhe bringen lassen, nicht vom Standard abweichen</div>
+                    <span class="expand-icon">▼</span>
+                    <!-- Versteckte Stichwörter für Suche -->
+                    <div style="display: none;">
+                        Laufzeit Dauer 3 Jahre Kürzerer Vertrag Glaubwürdigkeit Authentizität Kooperationscharakter Partnerschaft One-Night-Stand vs Beziehung Standardisierung PR-Ziele Individuelles Gebot Auswahlwahrscheinlichkeit Analystenmeinung
+                    </div>
+                </div>
+                <div class="intervention-content">
+                    <div class="formulierung">
+                        <h4>💬 Hauptformulierung:</h4>
+                        <div class="formulierung-text">"Schauen Sie, es ist ja so, wenn wir auf die Kooperationszeit von drei Jahren verzichten würden, würden wir auf die Glaubwürdigkeit des Projekts verzichten. Und die ist nun mal maßgeblich für unser Kooperationskonzept. Denn es ist ja so, dass diese Partnerschaftszeit ja nicht den Zweck erfüllen soll, einfach eine Zwangsehe auf Krampf durchzusetzen, sondern sie vor allem dafür sorgt, dass durch die Langlebigkeit der Partnerschaft erst zu einer wirklichen Partnerschaft wird oder wie eine Partnerschaft wahrgenommen wird.
+
+Wenn wir jetzt nach sechs oder zwölf Monaten beispielsweise die Partnerunternehmen wieder auswechseln würden, mit deren ärgsten Konkurrenten, dann würde man halt nicht von einer glaubwürdigen Empfehlung sprechen. Und da sind einfach die Analysten der Meinung gewesen, dass drei Jahre erforderlich sind, um gewissermaßen einen echten Kooperationscharakter zu zu erzielen. Und deswegen achten wir darauf, dass das auch eingehalten wird.
+
+Und wenn wir schon das Projekt bezuschussen, wenn wir hier schon ein Vergabeverfahren durchsetzen, wenn wir schon alles sehr, sehr aufwendig vorbereitet haben, dann nicht um daraus einen ,One-Night-Stand' zu machen. Also das ist ja so aus Kundensicht gesehen. Ich meine, im privaten Leben ist das ja nicht anders.
+
+Die Beziehungen, die von außerhalb auch als tiefgründige, ernstzunehmende Beziehungen wahrgenommen werden, sind meistens die, die wirklich lange anhalten. Die, bei denen es nur wenige Wochen anhält oder vielleicht sogar weniger, da weiß man, dass da einfach nur auf oberflächlicher Ebene sich etwas abgespielt hat. Und wenn wir den Eindruck erzeugen wollen, hier spielt sich etwas sehr Tiefgründiges ab, wir haben hier auf Basis echter Qualitätskriterien und Prinzipien diesen Partner ausgewählt und empfehlen den auch bewusst, weil er sich einfach als Partner besonders gut eignet, dann erreichen wir das nur durch langlebige Zusammenarbeit.
+
+Wir können leider unsere PR-Ziele nicht für seltene Sonderwünsche der Partner opfern, deswegen ist das die standardisierte Partnerschaftsdauer."</div>
+                    </div>
+                    <div class="zusatz-option">
+                        <h5>💡 Zusatzoption bei sehr umsatzstarken Kunden:</h5>
+                        <div class="formulierung-text">"Es gibt allerdings auch Möglichkeiten, ein individuelles Gebot abzugeben. Wir gehen ja im Auswahlverfahren nie nach dem Höchstbietenden. Da kann es sein, dass man mal auch mit einem individuellen Gebot berücksichtigt werden kann. Das wird dann zumindest geprüft. Verringert auch nicht immer die Auswahlwahrscheinlichkeit, vor allem dann, wenn man über andere Argumente punkten kann."</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intervention 10: Bei EDEKA nachgefragt -->
+            <div class="intervention-card" data-category="zweifel" data-intervention="intervention-10">
+                <div class="intervention-header" onclick="toggleCard(this)">
+                    <h2>10. Bei [EDEKA] nachgefragt - keiner weiß Bescheid</h2>
+                    <div class="scenario">Szenario: Kunde hat bei [EDEKA] nachgefragt und angeblich weiß niemand von der Kooperation</div>
+                    <span class="expand-icon">▼</span>
+                    <!-- Versteckte Stichwörter für Suche -->
+                    <div style="display: none;">
+                        Interne Nachfrage Keiner weiß Bescheid Informationsfluss Mitarbeiterwissen Zentral gesteuert TV-Kampagne Operatives Geschäft Standortleiter Markenrechte Fiktives Projekt Seriosität Vertrauen
+                    </div>
+                </div>
+                <div class="intervention-content">
+                    <div class="formulierung">
+                        <h4>💬 Formulierung:</h4>
+                        <div class="formulierung-text">"Also: ich weiß nicht, wer nichts davon weiß. Ich kann Ihnen auch nicht sagen, wer alles davon weiß. Aber was ich Ihnen sagen kann, ist, dass es sehr ungewöhnlich wäre, dass einzelne Mitarbeiter, Standortvertreter, sogar auch die Standortleiter über ein zentral gesteuertes Projekt dieser Art Bescheid wüssten.
+
+So wie die auch meistens nicht darüber Bescheid wissen, wenn [EDEKA] bspw. eine große TV-Kampagne plant umzusetzen. Das heißt nicht, wo die Standortleiter mit hineingezogen werden, befragt werden vielleicht sogar zu solchen Themen. Die haben andere Aufgaben. Die haben das operative Geschäft vor der Brust. Solche Sachen werden von denen nicht mitorganisiert.
+
+Aber Sie können sich sicher sein, wenn wir hier im Namen von [EDEKA] auftreten, mit diesem Markennamen herum jonglieren, dann tun wir das natürlich nicht im Risiko, damit die Markenrechte von [EDEKA] zu verletzen oder irgendeinen Unsinn zu erzählen. Ich spreche nicht mit Ihnen und Sie sprechen auch nicht mit mir über ein fiktives Projekt. Also wir haben uns heute nicht die Zeit genommen über ein fiktives Projekt zu sprechen."</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intervention 11: Sichtkontakte messen -->
+            <div class="intervention-card" data-category="technik" data-intervention="intervention-11">
+                <div class="intervention-header" onclick="toggleCard(this)">
+                    <h2>11. Wie werden Sichtkontakte gemessen?</h2>
+                    <div class="scenario">Szenario: Kunde fragt nach der technischen Messung der garantierten Reichweite</div>
+                    <span class="expand-icon">▼</span>
+                    <!-- Versteckte Stichwörter für Suche -->
+                    <div style="display: none;">
+                        Messung Tracking Sichtkontakte Reichweite Kontaktsensoren Pilotphase-Daten Mischkalkulation Wahrscheinlichkeitsberechnung Untergrenze Pessimistische Berechnung Dashboard Echtzeit-Verfolgung Ads-Manager Begegnungen Verweildauer
+                    </div>
+                </div>
+                <div class="intervention-content">
+                    <div class="formulierung">
+                        <h4>💬 Formulierung:</h4>
+                        <div class="formulierung-text">"Sehr gute Frage. Also ich wünschte, ich könnte die Frage im vollen Umfang beantworten, ich gebe ihn lieber eine abgespeckte Erklärung. Dahinter befindet sich nämlich eine sehr komplexe und gehaltvolle Mischkalkulation, die mathematisch erstmal aufgeschlüsselt werden müsste. Ich müsste hier wahrscheinlich eine Tafel haben und mit Kreide darauf rumzeichnen, um das zu veranschaulichen.
+
+Aber um es mal so vereinfacht wie möglich auf den Punkt zu bringen: es gibt dort zum einen Stichproben-Statistiken, die protokolliert worden sind, also Daten, die erhoben worden sind, auch über den Pilotzeitraum. Es gibt dort außerdem Messungen, die teils vor Ort auch durchgeführt werden, beispielsweise über Kontaktsensoren.
+
+Dann gibt es eine Wahrscheinlichkeitsberechnung, die mit hinzugenommen wird, wie wahrscheinlich ist es, so rechnet man beispielsweise, dass der Kunde, wenn er davor steht, sich das wirklich ansieht. Das wird dann mit hereingezogen. Also alles in allem ist das eine Mischkalkulation, die die Mindestreichweite ergibt.
+
+Deswegen sprechen wir auch immer von einer sehr konservativ berechneten Untergrenze. Ja, also wir gehen, oder ich gehe, sehr stark davon aus, dass die Untergrenze ohnehin übertroffen wird, da es, wie gesagt, sehr pessimistisch errechnet ist, also es auch realistisch ist, dass es da Abweichungen oberhalb dieser Untergrenze gibt.
+
+Ich könnte auch im Zweifel da im Nachgang nochmal ein Dokument raussuchen, was die Errechnung der Reichenweitenanzahl etwas vollständig und detailgetrau erklärt. Aber wichtiger: Jeder Partner erhält Zugang zum Dashboard, einer Art Live-Übersicht, worüber man in Echtzeit mit beobachten kann, wie viele Kontakte, wie viele Begegnungen zwischen den [EDEKA]-Kunden und dem jeweiligen Unternehmen bereits entstanden sind, dem eigenen Unternehmen bereits entstanden sind. Das kann dann wie gesagt live mit beobachtet, mit verfolgt werden. Man kann sozusagen mitfiebern, die Standorte untereinander vergleichen etc."</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intervention 12: Lead-Fragen -->
+            <div class="intervention-card" data-category="zweifel" data-intervention="intervention-12">
+                <div class="intervention-header" onclick="toggleCard(this)">
+                    <h2>12. Lead-Fragen / Anfragen-/Aufträge-Erwartung</h2>
+                    <div class="scenario">Szenario: Kunde fragt nach konkreten Zahlen zu Anfragen, Leads oder Aufträgen aus der Pilotphase</div>
+                    <div class="meta-comment">Meta-Kommentar: Umleitung von Konversion auf Reichweite, Empfehlungsphilosophie stärken, Cockpit-Transparenz als Alleinstellungsmerkmal</div>
+                    <span class="expand-icon">▼</span>
+                    <!-- Versteckte Stichwörter für Suche -->
+                    <div style="display: none;">
+                        Leads Anfragen Aufträge Konversion Erfolg ROI Konkrete Zahlen Pilotphase-Ergebnisse Feedback Empfehlungsmarketing Keine Schnittstelle Direkter Kontakt Verantwortungsbereich Reichweiten-Garantie Sichtkontakte Guter Ruf Markenbekanntheit Cockpit Transparenz
+                    </div>
+                </div>
+                <div class="intervention-content">
+                    <div class="formulierung">
+                        <h4>💬 Formulierung:</h4>
+                        <div class="formulierung-text">"Das ist eine sehr naheliegende Frage. Und hier muss ich Ihnen ehrlich sagen: Was die konkreten Anfragen oder Aufträge angeht, können wir keine belastbaren Vorhersagen treffen. Das hat allerdings nichts mit mangelnder Transparenz zu tun, sondern ist ein ganz bewusster Grundsatz unserer Zusammenarbeit.
+
+Denn wie ich bereits erklärt habe, orientiert sich unsere Methodik am klassischen Empfehlungsmarketing. Und bei einer echten Empfehlung mischt sich der Empfehlungsgeber nicht in den Geschäftsprozess zwischen dem Empfohlenen und dem potenziellen Kunden ein. Genau so handhaben wir das auch hier. Und auch schon bereits in der Pilotphase.
+
+Der QR-Code auf der digitalen Leinwand ist bewusst nicht mit einer Schnittstelle von unserer Seite verknüpft. Wenn ein Kunde Interesse hat und diesen Code scannt, wird er direkt zum Partner weitergeleitet - ohne Umweg über uns. Wir verzichten ganz bewusst darauf, uns zwischenzuschalten, Kontakte zu sammeln oder zu dokumentieren, wer wann welche Anfrage gestellt hat.
+
+Und genau deshalb konnten wir auch in der Pilotphase gar nicht selbst dokumentieren, wie viele Anfragen, Klicks oder Leads entstanden sind. Das lag immer im Verantwortungsbereich der jeweiligen Partner. Klar gab es Feedbacks von den Partnern - und diese Feedbacks waren durchweg positiv. Aber es gibt den Grundsatz, auch von [EDEKA] und von allen Marketingverantwortlichen, dass wir nicht auf Basis von Datenerhebungen durch Drittparteien irgendwelche Vorhersagen treffen. Das wäre weder seriös noch integer.
+
+Was wir allerdings sehr wohl garantieren können - und das ist viel wichtiger - sind die [XY-Anzahl] Sichtkontakte pro Markt über drei Jahre. Das ist messbar, dokumentierbar und rechtsverbindlich garantiert. Und genau diese Reichweite ist der entscheidende Hebel für den Vertrauensaufbau.
+
+Denn darum geht es ja letztendlich: Man wird systematisch und kontinuierlich im Umfeld einer vertrauenswürdigen Marke empfohlen. Mit der Zeit wird man zur lokalen Prominenz in der [EDEKA]-Kundschaft. Und diese Art von Vertrauensaufbau und Markenbekanntheit - das lässt sich nicht in Klickraten oder Cost-per-Lead messen.
+
+Das ist wie wenn Sie fragen würden: Wie viele Neukunden bringt mir ein guter Ruf? Schwer zu messen, aber dennoch das Wertvollste, was ein Unternehmen haben kann.
+
+Und im Übrigen – man erhält als Partner ja über unser Cockpit, diesen Ads-Manager, in Echtzeit Einblick in alle Reichweitendaten. Man kann live mitverfolgen, wie viele Sichtkontakte bereits entstanden sind, die einzelnen Standorte kann man miteinander vergleichen und erhält volle Transparenz über die Entwicklung der Kampagne. Diese Art von Transparenz gibt es normalerweise nicht.
+
+Aber - und das ist der entscheidende Punkt - ob ein Kunde, der den Partner durch diese Empfehlung kennengelernt hat, sich auch tatsächlich bei ihm meldet, das hängt von vielen Faktoren ab, die außerhalb unseres Einflussbereichs liegen: Ob er gerade akuten Bedarf hat, ob die Chemie stimmt, ob das Angebot zu seinem Budget passt. Das liegt dann im Verantwortungsbereich des Partners."</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intervention 13: Ausstrahlungsfrequenz -->
+            <div class="intervention-card" data-category="technik" data-intervention="intervention-13">
+                <div class="intervention-header" onclick="toggleCard(this)">
+                    <h2>13. Ausstrahlungsfrequenz</h2>
+                    <div class="scenario">Szenario: Kunde fragt nach der Häufigkeit der Spot-Ausstrahlung</div>
+                    <div class="meta-comment">Meta-Kommentar: Fokus auf Reichweiteneffizienz, intelligente Algorithmus-Steuerung, nicht auf starre Frequenzvorgaben</div>
+                    <span class="expand-icon">▼</span>
+                    <!-- Versteckte Stichwörter für Suche -->
+                    <div style="display: none;">
+                        Frequenz Häufigkeit Wie oft Ausstrahlung Sendezeit Algorithmus Intelligente Steuerung Reichweitenmaximierung Effizienz Stoßzeiten Besucherfrequenz Rotation EDEKA-Inhalte Cockpit Transparenz
+                    </div>
+                </div>
+                <div class="intervention-content">
+                    <div class="formulierung">
+                        <h4>💬 Formulierung:</h4>
+                        <div class="formulierung-text">"Sehr gute Frage. Also wir arbeiten nicht mit starren Ausstrahlungsintervallen oder fixen Rotationen, sondern mit einem intelligenten, algorithmusgesteuerten System, das auf Reichweitenmaximierung optimiert ist.
+
+Das bedeutet konkret: Die Spots werden dann ausgespielt, wenn die höchste Aufmerksamkeit und damit die beste Reichweite erzielt werden kann. Das System erkennt in Echtzeit die Besucherfrequenz im jeweiligen Markt und passt die Ausstrahlung entsprechend an.
+
+Zu Stoßzeiten verhält sich die Ausspielung in einem anderen Takt als zu schwächeren Besuchszeiten beispielsweise. So kann es sein, dass es Stunden gibt, in denen fast durchgehend und Stunden, in denen man weniger als 10-mal die Stunde ausgespielt wird.
+
+Aber das Entscheidende ist: Wir möglichst effizient viel Reichweite erzielen. Vor allem, da wir ja eine dabei Anzahl von XY-Kundenkontakten, also Sichtkontakten, garantieren.
+
+Denn was bringt es, wenn der Spot um 6 Uhr morgens läuft, aber kein Kunde da ist? Oder wenn er in der Mittagspause alle 30 Sekunden läuft und die Kunden davon genervt sind? Das wäre kontraproduktiv für die Empfehlungswahrnehmung.
+
+Deswegen wurde das System so programmiert, dass es die Ausstrahlung immer dann intensiviert, wenn die meisten Kunden vor Ort sind - und sich zurückhält, wenn weniger los ist. Das maximiert nicht nur die Reichweite, sondern sorgt auch dafür, dass die Empfehlung natürlich und nicht aufdringlich wirkt.
+
+Zusätzlich gibt es auch eine gewisse Rotation mit anderen Inhalten - denn es ist ja nicht so, dass die Leinwand 24/7 nur Ihren Spot zeigt. Es gibt auch allgemeine EDEKA-Informationen, saisonale Hinweise und so weiter. Aber Ihr Spot hat einen garantierten Mindestanteil der Sendezeit - und dieser Anteil ist so kalkuliert, dass die zugesagten 500.000 Kontakte definitiv erreicht werden.
+
+Und wie gesagt, Sie können das alles live im Cockpit mitverfolgen. Wenn Sie sehen wollen, wann und wie oft Ihr Spot heute gelaufen ist, oder wie sich die Reichweite über die Woche entwickelt hat - all das ist für Sie transparent einsehbar.
+
+Das ist ein großer Vorteil gegenüber klassischen Werbemaßnahmen, wo Sie oft gar nicht wissen, ob und wann Ihre Anzeige tatsächlich gesehen wurde."</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="quick-access" onclick="scrollToTop()" title="Zum Anfang">
+        ↑
+    </div>
+
+    <script>
+        let currentFilter = 'all';
+        let searchMatches = [];
+        let currentMatchIndex = -1;
+
+        function toggleCard(header) {
+            const card = header.closest('.intervention-card');
+            card.classList.toggle('expanded');
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function navigateToMatch(direction) {
+            if (searchMatches.length === 0) return;
+            
+            // Remove current match highlighting
+            if (currentMatchIndex >= 0 && currentMatchIndex < searchMatches.length) {
+                searchMatches[currentMatchIndex].classList.remove('current-match');
+            }
+            
+            // Calculate new index
+            currentMatchIndex += direction;
+            
+            // Wrap around if necessary
+            if (currentMatchIndex >= searchMatches.length) {
+                currentMatchIndex = 0;
+            } else if (currentMatchIndex < 0) {
+                currentMatchIndex = searchMatches.length - 1;
+            }
+            
+            // Highlight current match
+            const currentMatch = searchMatches[currentMatchIndex];
+            currentMatch.classList.add('current-match');
+            
+            // Ensure parent card is visible and expanded
+            const card = currentMatch.closest('.intervention-card');
+            if (card) {
+                card.style.display = 'block';
+                card.classList.add('expanded');
+            }
+            
+            // Scroll to current match
+            currentMatch.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+            
+            // Update info and buttons
+            updateNavigationState();
+        }
+
+        function updateNavigationState() {
+            const searchInfo = document.getElementById('searchInfo');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const searchNavigation = document.getElementById('searchNavigation');
+            
+            if (searchMatches.length > 1) {
+                searchNavigation.classList.add('active');
+                searchInfo.textContent = `${currentMatchIndex + 1} von ${searchMatches.length}`;
+                
+                prevBtn.disabled = false;
+                nextBtn.disabled = false;
+            } else {
+                searchNavigation.classList.remove('active');
+            }
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const allItems = document.querySelectorAll('.intervention-header, .formulierung-text, .scenario, .meta-comment');
+            const resultsDiv = document.getElementById('searchResults');
+            
+            // Clear previous highlights and matches
+            allItems.forEach(item => {
+                item.classList.remove('highlight', 'current-match');
+            });
+            searchMatches = [];
+            currentMatchIndex = -1;
+            
+            if (searchTerm.length > 2) {
+                // Reset all cards to visible first
+                const allCards = document.querySelectorAll('.intervention-card');
+                allCards.forEach(card => {
+                    card.style.display = 'none'; // Hide all first
+                });
+                
+                const cardsWithMatches = new Set();
+                
+                allItems.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        item.classList.add('highlight');
+                        searchMatches.push(item);
+                        
+                        // Find parent card and mark it for showing
+                        const card = item.closest('.intervention-card');
+                        if (card) {
+                            cardsWithMatches.add(card);
+                            card.classList.add('expanded');
+                        }
+                    }
+                });
+                
+                // Show only cards that have matches
+                cardsWithMatches.forEach(card => {
+                    card.style.display = 'block';
+                });
+                
+                // Show results count
+                if (searchMatches.length > 0) {
+                    resultsDiv.textContent = `${searchMatches.length} Ergebnis${searchMatches.length > 1 ? 'se' : ''} gefunden`;
+                    resultsDiv.style.display = 'block';
+                    resultsDiv.style.color = '#28a745';
+                    
+                    // Auto-navigate to first match
+                    currentMatchIndex = 0;
+                    searchMatches[0].classList.add('current-match');
+                    
+                    setTimeout(() => {
+                        searchMatches[0].scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center' 
+                        });
+                    }, 100);
+                    
+                    updateNavigationState();
+                } else {
+                    resultsDiv.textContent = 'Keine Ergebnisse gefunden';
+                    resultsDiv.style.display = 'block';
+                    resultsDiv.style.color = '#dc3545';
+                    document.getElementById('searchNavigation').classList.remove('active');
+                    
+                    // Show all cards again if no matches
+                    allCards.forEach(card => {
+                        card.style.display = 'block';
+                    });
+                }
+            } else {
+                resultsDiv.style.display = 'none';
+                document.getElementById('searchNavigation').classList.remove('active');
+                
+                // Show all cards again
+                const allCards = document.querySelectorAll('.intervention-card');
+                allCards.forEach(card => {
+                    card.style.display = 'block';
+                });
+                
+                // Reset current filter
+                applyFilter();
+            }
+        });
+
+        // Filter functionality
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Update active button
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                currentFilter = this.dataset.filter;
+                applyFilter();
+                
+                // If it's a micro-shortcut (specific intervention), auto-expand that card
+                if (currentFilter.startsWith('intervention-')) {
+                    setTimeout(() => {
+                        const targetCard = document.querySelector(`[data-intervention="${currentFilter}"]`);
+                        if (targetCard) {
+                            targetCard.classList.add('expanded');
+                            targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }, 100);
+                }
+            });
+        });
+
+        function applyFilter() {
+            const cards = document.querySelectorAll('.intervention-card');
+            
+            cards.forEach(card => {
+                const category = card.dataset.category;
+                const intervention = card.dataset.intervention;
+                
+                if (currentFilter === 'all') {
+                    card.style.display = 'block';
+                } else if (currentFilter.startsWith('intervention-')) {
+                    // Mikro-Shortcut: Zeige nur diese spezifische Intervention
+                    card.style.display = intervention === currentFilter ? 'block' : 'none';
+                } else {
+                    // Makro-Shortcut: Zeige alle Interventionen dieser Kategorie
+                    card.style.display = category === currentFilter ? 'block' : 'none';
+                }
+            });
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + F for search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            }
+            
+            // Enter for next match, Shift+Enter for previous match (when search is focused)
+            if (document.getElementById('searchInput') === document.activeElement) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (e.shiftKey) {
+                        navigateToMatch(-1);
+                    } else {
+                        navigateToMatch(1);
+                    }
+                }
+            }
+            
+            // Numbers 1-9 to jump to interventions
+            if (e.key >= '1' && e.key <= '9') {
+                const interventionNumber = parseInt(e.key);
+                const cards = document.querySelectorAll('.intervention-card');
+                if (cards[interventionNumber - 1]) {
+                    cards[interventionNumber - 1].scrollIntoView({ behavior: 'smooth' });
+                    cards[interventionNumber - 1].classList.add('expanded');
+                }
+            }
+            
+            // Escape to clear search
+            if (e.key === 'Escape') {
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput.value) {
+                    searchInput.value = '';
+                    searchInput.dispatchEvent(new Event('input'));
+                }
+            }
+        });
+
+        // Auto-expand first card on load + inject Abschluss-Shortcut
+        document.addEventListener('DOMContentLoaded', function() {
+            const firstCard = document.querySelector('.intervention-card');
+            if (firstCard) {
+                firstCard.classList.add('expanded');
+            }
+
+            // Inject "back to closing part" shortcut under every intervention
+            document.querySelectorAll('.intervention-content').forEach(function(content) {
+                if (!content.querySelector('.close-shortcut')) {
+                    const div = document.createElement('div');
+                    div.className = 'close-shortcut';
+                    div.innerHTML = '<a href="#closingPart" class="close-btn">✅ Einwand geklärt → Zum Abschluss-Part</a>';
+                    content.appendChild(div);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

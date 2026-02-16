@@ -1283,5 +1283,15 @@ Das ist ein großer Vorteil gegenüber klassischen Werbemaßnahmen, wo Sie oft g
             });
         });
     </script>
+
+    <script>
+function sendHeight() {
+  const height = document.documentElement.scrollHeight;
+  window.parent.postMessage({ iframeHeight: height }, "*");
+}
+
+window.addEventListener("load", sendHeight);
+window.addEventListener("resize", sendHeight);
+</script>
 </body>
 </html>

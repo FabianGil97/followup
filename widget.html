@@ -1283,15 +1283,22 @@ Das ist ein großer Vorteil gegenüber klassischen Werbemaßnahmen, wo Sie oft g
             });
         });
     </script>
+<script>
+  function sendHeight() {
+    const height = Math.max(
+      document.body.scrollHeight,
+      document.documentElement.scrollHeight
+    );
+    window.parent.postMessage({ iframeHeight: height }, "*");
+  }
 
-    <script>
-function sendHeight() {
-  const height = document.documentElement.scrollHeight;
-  window.parent.postMessage({ iframeHeight: height }, "*");
-}
+  window.addEventListener("load", sendHeight);
+  window.addEventListener("resize", sendHeight);
 
-window.addEventListener("load", sendHeight);
-window.addEventListener("resize", sendHeight);
+  // falls Inhalte nachträglich laden (Fonts, Bilder, API etc.)
+  setInterval(sendHeight, 500);
 </script>
+
+ 
 </body>
 </html>
